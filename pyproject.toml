@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "api-tests"
+version = "0.1.0"
+description = "hw api"
+authors = ["Daria Chaenkova <dash.kustowa2010@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+jsonschema = "^4.22.0"
+pytest = "^8.2.2"
+requests = "^2.32.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
