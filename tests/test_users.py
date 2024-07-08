@@ -2,7 +2,7 @@ import json
 from jsonschema import validate
 import requests
 from pathlib import Path
-from schemas.users import user, create, update
+from schemas.users import user, create, update, login_error, login_successfully
 
 
 def test_all_the_users_should_have_unique_id():
@@ -18,12 +18,13 @@ def test_all_the_users_should_have_unique_id():
 
 
 def test_get_user_by_id():
-    id = '2'
+    id = 2
 
-    response = requests.get('https://reqres.in/api/users/' + id)
+    response = requests.get(f'https://reqres.in/api/users/{id}')
     body = response.json()
 
     assert response.status_code == 200
+    assert body['data']['id'] == id
     validate(body, schema=user)
 
 
@@ -70,6 +71,7 @@ def test_delete_user():
     response = requests.delete('https://reqres.in/api/users/' + id)
 
     assert response.status_code == 204
+    assert response.content == b''  #ожидаем, что в контенте ответа нет ничего
 
 
 def test_users_per_page_should_have_correct_count():
@@ -81,3 +83,26 @@ def test_users_per_page_should_have_correct_count():
     assert len(ids) == body['per_page']
     with open(Path(__file__).parent.parent.joinpath(f'schemas/users.json')) as file:
         validate(body, schema=json.loads(file.read()))
+
+
+def test_users_login_successful():
+    email = 'eve.holt@reqres.in'
+    password = 'cityslicka'
+    payload = {'email': email, 'password': password}
+    response = requests.post('https://reqres.in/api/login', json=payload)
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body['token'] != ''
+    validate(body, schema=login_successfully)
+
+
+def test_users_login_unsuccessful():
+    email = 'eve.holt@reqres.in'
+    payload = {'email': email}
+    response = requests.post('https://reqres.in/api/login', json=payload)
+    body = response.json()
+
+    assert response.status_code == 400
+    assert body['error'] == "Missing password"
+    validate(body, schema=login_error)
